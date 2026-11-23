@@ -1,0 +1,569 @@
+/* ─────────────────────────────────────────────────────────────
+   Paper · Ink · Terracotta — editorial / broken-grid deck
+   Rang mantig‘i:
+   paper  — qog‘oz, fon
+   ink    — tuzilma, matn, chiziqlar
+   terra  — tuproq va o‘g‘it: asosiy omil, urg‘u
+   clay   — terrakotaning och tusi: past doza, ikkilamchi
+   sage   — o‘simlik: natija (javob funksiyasi)
+   ochre  — hosil: xulosa, muhim raqam
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --paper: #f1eadb;
+  --paper-2: #e8dcc6;
+  --paper-3: #ddcdb1;
+  --ink: #1e1a16;
+  --ink-2: #4a4038;
+  --ink-3: #8a7d6f;
+  --terra: #b4532a;
+  --terra-deep: #82391b;
+  --clay: #d99a72;
+  --clay-2: #ecc6a8;
+  --sage: #66744a;
+  --ochre: #c08a2e;
+
+  --f-display: 'Fraunces', 'Times New Roman', serif;
+  --f-text: 'Newsreader', Georgia, serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.deck-viewport {
+  position: fixed;
+  inset: 0;
+  background: #14110e;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.deck-stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1600px;
+  height: 900px;
+  transform-origin: center center;
+}
+
+/* ── slide ─────────────────────────────────────────────────── */
+.slide {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-text);
+  font-optical-sizing: auto;
+  font-feature-settings: 'kern', 'liga', 'onum';
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.55s ease,
+    visibility 0s linear 0.55s;
+}
+.slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.55s ease;
+}
+/* qog‘oz donadorligi */
+.slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.28;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .3  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+.slide.is-dark {
+  background-color: var(--ink);
+  color: var(--paper);
+}
+.slide.is-terra {
+  background-color: var(--terra);
+  color: var(--paper);
+}
+
+/* entry animation, staggered by --d */
+.slide [data-in] {
+  opacity: 0;
+  transform: translateY(18px);
+}
+.slide.is-active [data-in] {
+  animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.1, 1) forwards;
+  animation-delay: calc(var(--d, 0) * 90ms + 120ms);
+}
+.slide [data-in='fade'] {
+  transform: none;
+}
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: var(--t, none);
+  }
+}
+
+.abs {
+  position: absolute;
+}
+
+/* ── folio (har sahifadagi jurnal ramkasi) ─────────────────── */
+.folio {
+  position: absolute;
+  left: 64px;
+  right: 64px;
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 40;
+}
+.folio.top {
+  top: 34px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid currentColor;
+}
+.folio.bottom {
+  bottom: 30px;
+}
+.is-dark .folio,
+.is-terra .folio {
+  color: color-mix(in srgb, var(--paper) 75%, transparent);
+}
+.folio .part {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+}
+.folio .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--terra);
+  display: inline-block;
+}
+.folio .pg {
+  font-family: var(--f-display);
+  font-size: 22px;
+  letter-spacing: 0;
+  font-style: italic;
+  text-transform: none;
+  color: var(--ink);
+}
+.is-dark .folio .pg,
+.is-terra .folio .pg {
+  color: var(--paper);
+}
+
+/* ── typography ────────────────────────────────────────────── */
+.kicker {
+  font-family: var(--f-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--terra);
+}
+.is-terra .kicker {
+  color: var(--paper);
+}
+.display {
+  font-family: var(--f-display);
+  font-variation-settings:
+    'SOFT' 40,
+    'WONK' 1;
+  font-weight: 380;
+  line-height: 0.9;
+  letter-spacing: -0.025em;
+}
+.display em,
+.h2 em {
+  font-style: italic;
+  color: var(--terra);
+  font-weight: 340;
+}
+.h2 {
+  font-family: var(--f-display);
+  font-variation-settings:
+    'SOFT' 30,
+    'WONK' 1;
+  font-size: 72px;
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+.lede {
+  font-family: var(--f-text);
+  font-style: italic;
+  font-size: 28px;
+  line-height: 1.32;
+  color: var(--ink-2);
+  font-weight: 380;
+}
+.body {
+  font-size: 21px;
+  line-height: 1.45;
+  color: var(--ink-2);
+  font-weight: 400;
+}
+.body b,
+.lede b {
+  color: var(--ink);
+  font-weight: 600;
+  font-style: normal;
+}
+.small {
+  font-size: 17px;
+  line-height: 1.42;
+  color: var(--ink-2);
+}
+.label {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.term {
+  font-family: var(--f-display);
+  font-variation-settings: 'SOFT' 60;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 500;
+}
+.math {
+  font-family: var(--f-text);
+  font-style: italic;
+  font-weight: 420;
+  white-space: nowrap;
+}
+.math sub,
+.math sup {
+  font-size: 0.6em;
+  font-style: normal;
+}
+.serif-num {
+  font-family: var(--f-display);
+  font-variation-settings:
+    'SOFT' 100,
+    'WONK' 1;
+  font-weight: 300;
+  line-height: 0.8;
+}
+.dropcap::first-letter {
+  float: left;
+  font-family: var(--f-display);
+  font-size: 4.1em;
+  line-height: 0.82;
+  padding: 6px 12px 0 0;
+  color: var(--terra);
+  font-weight: 400;
+}
+
+/* giant outlined numeral bleeding off the page */
+.ghost {
+  position: absolute;
+  font-family: var(--f-display);
+  font-variation-settings:
+    'SOFT' 100,
+    'WONK' 1;
+  font-weight: 800;
+  line-height: 0.75;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--terra);
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── print-like objects ────────────────────────────────────── */
+.card {
+  background: var(--paper-2);
+  border: 1.5px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--ink);
+  padding: 26px 28px;
+}
+.card.terra {
+  background: var(--terra);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.card.terra .small,
+.card.terra .body {
+  color: color-mix(in srgb, var(--paper) 88%, transparent);
+}
+.card.ink {
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 8px 8px 0 var(--terra);
+}
+.card.ink .small,
+.card.ink .body {
+  color: color-mix(in srgb, var(--paper) 80%, transparent);
+}
+.rule {
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
+.tape {
+  position: absolute;
+  width: 140px;
+  height: 34px;
+  background: color-mix(in srgb, var(--clay) 70%, transparent);
+  mix-blend-mode: multiply;
+  z-index: 5;
+}
+.photo {
+  position: absolute;
+  background: var(--paper);
+  overflow: hidden;
+}
+.photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  mix-blend-mode: multiply;
+}
+.photo.framed {
+  border: 1.5px solid var(--ink);
+  box-shadow: 10px 10px 0 var(--terra);
+}
+.caption {
+  font-family: var(--f-text);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-3);
+}
+.stamp {
+  position: absolute;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  border: 1.5px solid var(--terra);
+  color: var(--terra);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+.stamp::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 1px dashed currentColor;
+}
+.pill {
+  display: inline-block;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 10px 4px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+}
+.vtext {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+/* tables */
+.tbl {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 19px;
+}
+.tbl th {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--ink-3);
+  text-align: left;
+  padding: 0 12px 10px;
+  border-bottom: 1.5px solid var(--ink);
+}
+.tbl td {
+  padding: 9px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  color: var(--ink-2);
+}
+.tbl td.c,
+.tbl th.c {
+  text-align: center;
+}
+
+/* plot grids (joylashtirish sxemalari) */
+.plots {
+  display: grid;
+  gap: 3px;
+}
+.plot {
+  aspect-ratio: 1 / 1.35;
+  border: 1px solid var(--ink);
+  display: grid;
+  place-items: center;
+  font-family: var(--f-mono);
+  font-size: 13px;
+  font-weight: 700;
+}
+.v1 {
+  background: var(--paper);
+  color: var(--ink);
+}
+.v2 {
+  background: var(--clay-2);
+  color: var(--ink);
+}
+.v3 {
+  background: var(--clay);
+  color: var(--ink);
+}
+.v4 {
+  background: var(--terra);
+  color: var(--paper);
+}
+.v5 {
+  background: var(--terra-deep);
+  color: var(--paper);
+}
+.v6 {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ── controls (sahnadan tashqarida) ────────────────────────── */
+.deck-ui {
+  position: fixed;
+  right: 18px;
+  bottom: 16px;
+  z-index: 100;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--paper);
+  background: color-mix(in srgb, #14110e 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--paper) 25%, transparent);
+  padding: 6px;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  transition: opacity 0.4s;
+}
+.deck-ui.idle {
+  opacity: 0;
+}
+.deck-ui button {
+  all: unset;
+  cursor: pointer;
+  padding: 7px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.deck-ui button:hover {
+  background: var(--terra);
+}
+.deck-ui button:focus-visible {
+  outline: 2px solid var(--clay);
+}
+.deck-ui .count {
+  padding: 0 8px;
+  min-width: 64px;
+  text-align: center;
+}
+.deck-progress {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--terra);
+  z-index: 100;
+  transition: width 0.5s ease;
+}
+.deck-hint {
+  position: fixed;
+  left: 18px;
+  bottom: 20px;
+  z-index: 100;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--paper) 55%, transparent);
+  transition: opacity 0.4s;
+}
+.deck-hint.idle {
+  opacity: 0;
+}
+
+/* ── print: har slayd — alohida 16:9 sahifa ────────────────── */
+@media print {
+  @page {
+    size: 1600px 900px;
+    margin: 0;
+  }
+  html,
+  body {
+    background: var(--paper);
+  }
+  .deck-viewport {
+    position: static;
+    display: block;
+    background: none;
+    overflow: visible;
+  }
+  .deck-stage {
+    position: static;
+    transform: none !important;
+    width: 1600px;
+    height: auto;
+  }
+  .slide {
+    position: relative;
+    width: 1600px;
+    height: 900px;
+    opacity: 1;
+    visibility: visible;
+    break-after: page;
+    page-break-after: always;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .slide [data-in] {
+    opacity: 1 !important;
+    animation: none !important;
+    transform: var(--t, none) !important;
+  }
+  .deck-ui,
+  .deck-progress,
+  .deck-hint {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide.is-active [data-in] {
+    animation-duration: 0.01s;
+    animation-delay: 0s;
+  }
+}
