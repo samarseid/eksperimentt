@@ -16,19 +16,15 @@ const PARTS = {
 } as const
 type Part = keyof typeof PARTS
 
-/** Netlify Image CDN orqali optimallashtirilgan rasm manzili */
-const img = (name: string, w: number) =>
-  `/.netlify/images?url=/img/${name}.png&w=${w}&fm=webp&q=80`
+const img = (name: string, _w: number) => `/img/${name}.png`
 
-/** joylashuv + kirish animatsiyasi uchun style yordamchisi */
 function at(
   d: number,
-  s: CSSProperties & { rot?: number } = {},
+  pos: CSSProperties & { rot?: number },
 ): CSSProperties {
-  const { rot, ...rest } = s
+  const { rot, ...rest } = pos
   return {
     ...rest,
-    ...(rot ? { transform: `rotate(${rot}deg)` } : {}),
     '--d': d,
     '--t': rot ? `rotate(${rot}deg)` : 'none',
   } as CSSProperties

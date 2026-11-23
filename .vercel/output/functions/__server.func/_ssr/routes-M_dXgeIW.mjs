@@ -28,13 +28,7 @@ var PARTS = {
 	}
 };
 /** Netlify Image CDN orqali optimallashtirilgan rasm manzili */
-var img = (name, w) => `/.netlify/images?url=/img/${name}.png&w=${w}&fm=webp&q=80`;
-/** joylashuv + kirish animatsiyasi uchun style yordamchisi */
-function at(d, s = {}) {
-	const { rot, ...rest } = s;
-	return {
-		...rest,
-		...rot ? { transform: `rotate(${rot}deg)` } : {},
+var img = (name, w) => `/img/${name}.png
 		"--d": d,
 		"--t": rot ? `rotate(${rot}deg)` : "none"
 	};
